@@ -13,13 +13,13 @@ async function fetchData(url, options = {}) {
     }
 }
 
-export async function fetchTrainData() {
-    const fromCity = encodeURIComponent("Dhaka");
-    const toCity = encodeURIComponent("Rajshahi");
-    const dateOfJourney = encodeURIComponent("30-Dec-2024");
-    const seatClass = encodeURIComponent("SNIGDHA");
+export async function fetchTrainData(fromCity, toCity, dateOfJourney, seatClass = "SNIGDHA") {
+    const encodedFromCity = encodeURIComponent(fromCity);
+    const encodedToCity = encodeURIComponent(toCity);
+    const encodedDateOfJourney = encodeURIComponent(dateOfJourney);
+    const encodedSeatClass = encodeURIComponent(seatClass);
 
-    const searchTripsUrl = `${baseApiUrl}/bookings/search-trips-v2?from_city=${fromCity}&to_city=${toCity}&date_of_journey=${dateOfJourney}&seat_class=${seatClass}`;
+    const searchTripsUrl = `${baseApiUrl}/bookings/search-trips-v2?from_city=${encodedFromCity}&to_city=${encodedToCity}&date_of_journey=${encodedDateOfJourney}&seat_class=${encodedSeatClass}`;
 
     // Call the Next.js API route for the proxy
     const proxiedUrl = `/api/proxy?url=${encodeURIComponent(searchTripsUrl)}`;

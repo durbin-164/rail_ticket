@@ -2,10 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { fetchTrainData, fetchTrainRoutes } from "./api";
-import TrainList from "./TrainList";
 import TrainDetails from "./TrainDetails";
+import { useSearchParams } from "next/navigation";
 
 export default function TrainRoutesPage() {
+    const searchParams = useSearchParams();
+    const fromCity = searchParams.get("fromCity");
+    const toCity = searchParams.get("toCity");
+    const date = searchParams.get("date");
+
     const [trains, setTrains] = useState([]);
     const [selectedTrain, setSelectedTrain] = useState(null);
     const [routes, setRoutes] = useState([]);
@@ -14,9 +19,16 @@ export default function TrainRoutesPage() {
 
     useEffect(() => {
         const loadTrains = async () => {
+            if (!fromCity || !toCity || !date) {
+                setError("Missing search parameters.");
+                setLoading(false);
+                return;
+            }
+
             try {
                 setError(null);
-                const trainData = await fetchTrainData();
+                const trainData = await fetchTrainData(fromCity, toCity, date);
+                console.log(trainData)
                 setTrains(trainData?.data?.trains || []);
             } catch (err) {
                 setError("Failed to load trains. Please try again later.");
@@ -26,7 +38,7 @@ export default function TrainRoutesPage() {
         };
 
         loadTrains();
-    }, []);
+    }, [fromCity, toCity, date]);
 
     const handleSelectTrain = async (train) => {
         setSelectedTrain(train);
@@ -36,6 +48,7 @@ export default function TrainRoutesPage() {
 
         try {
             const routeData = await fetchTrainRoutes(trainNumber, departureDate);
+            console.log
             setRoutes(routeData?.data?.routes || []);
         } catch (error) {
             console.error("Error fetching routes:", error.message);
@@ -44,15 +57,25 @@ export default function TrainRoutesPage() {
 
     return (
         <div>
-            <h1>Train Routes</h1>
+            <h1>Found Trains</h1>
             {loading && <p>Loading trains...</p>}
             {error && <p className="error">{error}</p>}
-            {!loading && !error && (
-                <>
-                    <TrainList trains={trains} onSelectTrain={handleSelectTrain} />
-                    <TrainDetails selectedTrain={selectedTrain} routes={routes} />
-                </>
+            {!loading && !error && trains.length > 0 && (
+                <ul>
+                    {trains.map((train) => (
+                        <li key={train.trip_number}>
+                            <button onClick={() => handleSelectTrain(train)}>
+                                {train.trip_number} - {train.departure_date_time}
+                            </button>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {!loading && !error && trains.length === 0 && <p>No trains found.</p>}
+            {selectedTrain && (
+                <TrainDetails selectedTrain={selectedTrain} routes={routes} date={date} />
             )}
         </div>
     );
 }
+    
