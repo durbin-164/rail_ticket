@@ -8,7 +8,6 @@ import {
   Text,
   Spinner,
   Alert,
-//   AlertIcon,
   Heading,
   Table,
 } from "@chakra-ui/react";
@@ -17,6 +16,11 @@ export default function TrainDetails({ selectedTrain, routes, date }) {
   const [seatDetails, setSeatDetails] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Reset seat details when the selected train changes
+  useEffect(() => {
+    setSeatDetails([]);
+  }, [selectedTrain]);
 
   // Function to fetch seat data
   const fetchSeatData = async (fromCity, toCity, dateOfJourney) => {
@@ -74,23 +78,6 @@ export default function TrainDetails({ selectedTrain, routes, date }) {
         Train Details: {selectedTrain.trip_number}
       </Heading>
 
-      {/* <Heading size="md" mb={2}>
-        Routes
-      </Heading> */}
-      {/* {routes && routes.length > 0 ? (
-        <Box mb={4}>
-          <ul>
-            {routes.map((route, index) => (
-              <li key={index}>
-                <Text>{route.city}</Text>
-              </li>
-            ))}
-          </ul>
-        </Box>
-      ) : (
-        <Text>No routes available for this train.</Text>
-      )} */}
-
       <Heading size="md" mb={2}>
         Seat Availability
       </Heading>
@@ -102,12 +89,11 @@ export default function TrainDetails({ selectedTrain, routes, date }) {
       )}
       {error && (
         <Alert status="error" mb={4}>
-          <AlertIcon />
           {error}
         </Alert>
       )}
       {seatDetails.length > 0 ? (
-        <Table.ScrollArea borderWidth="1px" rounded="md" height="500px">
+        <Table.ScrollArea borderWidth="10px" rounded="md" height="700px" width="60%" mx="auto">
           <Table.Root size="sm" stickyHeader>
             <Table.Header>
               <Table.Row bg="bg.subtle">
@@ -120,7 +106,9 @@ export default function TrainDetails({ selectedTrain, routes, date }) {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {seatDetails.map((seat, index) => (
+            {seatDetails
+              .filter((seat) => seat.availableSeats > 0)  // Filter out seats with availableSeats <= 0
+              .map((seat, index) => (
                 <Table.Row key={index}>
                   <Table.Cell>{seat.origin}</Table.Cell>
                   <Table.Cell>{seat.destination}</Table.Cell>
