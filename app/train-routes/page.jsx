@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { fetchTrainData, fetchTrainRoutes } from "./api";
 import TrainDetails from "./TrainDetails";
 import { useSearchParams } from "next/navigation";
 
-export default function TrainRoutesPage() {
+function TrainRoutesContent() {
     const searchParams = useSearchParams();
     const fromCity = searchParams.get("fromCity");
     const toCity = searchParams.get("toCity");
@@ -28,7 +28,6 @@ export default function TrainRoutesPage() {
             try {
                 setError(null);
                 const trainData = await fetchTrainData(fromCity, toCity, date);
-                console.log(trainData)
                 setTrains(trainData?.data?.trains || []);
             } catch (err) {
                 setError("Failed to load trains. Please try again later.");
@@ -48,16 +47,11 @@ export default function TrainRoutesPage() {
 
         try {
             const routeData = await fetchTrainRoutes(trainNumber, departureDate);
-            console.log
             setRoutes(routeData?.data?.routes || []);
         } catch (error) {
             console.error("Error fetching routes:", error.message);
         }
     };
-
-    if (!fromCity || !toCity || !date) {
-        return <p>Please provide all search parameters to view train routes.</p>;
-    }    
 
     return (
         <div>
@@ -82,4 +76,11 @@ export default function TrainRoutesPage() {
         </div>
     );
 }
-    
+
+export default function TrainRoutesPage() {
+    return (
+        <Suspense fallback={<p>Loading...</p>}>
+            <TrainRoutesContent />
+        </Suspense>
+    );
+}
