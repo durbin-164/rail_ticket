@@ -55,6 +55,10 @@ export default function TrainRoutesPage() {
         }
     };
 
+    if (!fromCity || !toCity || !date) {
+        return <p>Please provide all search parameters to view train routes.</p>;
+    }    
+
     return (
         <div>
             <h1>Found Trains</h1>
